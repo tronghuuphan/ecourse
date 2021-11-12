@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 
 from . import models
-from .serializers import CategorySerializer, CourseSerializer, LessonSerializer, DetailLessonSerializer, TagSerializer, UpdateLessonTagSerializer
+from .serializers import CategorySerializer, CourseSerializer, LessonSerializer, DetailLessonSerializer, TagSerializer
 from .paginations import CoursePagination
 from .filters import CourseFilter, LessonFilter
 
@@ -53,11 +53,11 @@ class LessonViewSet(ListModelMixin, GenericViewSet):
     def get_queryset(self):
         return models.Lesson.objects.filter(course_id=self.kwargs['course_pk'])
     
-class DetailLessonViewSet(RetrieveModelMixin, GenericViewSet, UpdateModelMixin):
+class DetailLessonViewSet(RetrieveModelMixin, GenericViewSet):
     queryset = models.Lesson.objects.filter(active=True)
     serializer_class = DetailLessonSerializer
 
-    @action(methods=['post'], detail=True, url_path='tags')
+    @action(methods=['patch'], detail=True, url_path='tags')
     def add_tags(self, request, pk):
         try:
             lesson = self.get_object()
