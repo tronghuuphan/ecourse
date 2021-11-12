@@ -1,13 +1,14 @@
 from django.http import Http404
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
-from rest_framework.decorators import action
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+from rest_framework.decorators import action, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 
 from . import models
-from .serializers import CategorySerializer, CourseSerializer, LessonSerializer, DetailLessonSerializer
+from .serializers import CategorySerializer, CourseSerializer, LessonSerializer, DetailLessonSerializer, TagSerializer, UpdateLessonTagSerializer
 from .paginations import CoursePagination
 from .filters import CourseFilter, LessonFilter
 
@@ -39,6 +40,11 @@ class CourseViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
         #lessons = course.lessons.all()
         #return Response(LessonSerializer(lessons, many=True).data)
 
+class TagViewSet(ModelViewSet):
+    queryset = models.Tag.objects.all()
+    serializer_class = TagSerializer
+    permission_classes = [IsAdminUser]
+
 class LessonViewSet(ListModelMixin, GenericViewSet):
     serializer_class = LessonSerializer
     filter_backends = (DjangoFilterBackend,)
@@ -47,7 +53,7 @@ class LessonViewSet(ListModelMixin, GenericViewSet):
     def get_queryset(self):
         return models.Lesson.objects.filter(course_id=self.kwargs['course_pk'])
     
-class DetailLessonViewSet(RetrieveModelMixin, GenericViewSet):
+class DetailLessonViewSet(RetrieveModelMixin, GenericViewSet, UpdateModelMixin):
     queryset = models.Lesson.objects.filter(active=True)
     serializer_class = DetailLessonSerializer
 
@@ -64,7 +70,4 @@ class DetailLessonViewSet(RetrieveModelMixin, GenericViewSet):
                     t, _ = models.Tag.objects.get_or_create(name=tag)
                     lesson.tags.add(t)
                 lesson.save()
-
                 return Response(self.serializer_class(lesson).data, status=status.HTTP_201_CREATED)
-        
-

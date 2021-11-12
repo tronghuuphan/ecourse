@@ -50,7 +50,3 @@ class DetailLessonSerializer(LessonSerializer):
         model = LessonSerializer.Meta.model
         fields = LessonSerializer.Meta.fields + ['content', 'tags']
 
-class CommentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = models.Comment
-        fields = ['id', 'content', 'created_date', 'updated_date']
