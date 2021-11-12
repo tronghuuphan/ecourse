@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 
 from . import models
-from .serializers import CategorySerializer, CourseSerializer, LessonSerializer, DetailLessonSerializer, TagSerializer
+from .serializers import CategorySerializer, CommentSerializer, CourseSerializer, LessonSerializer, DetailLessonSerializer, TagSerializer
 from .paginations import CoursePagination
 from .filters import CourseFilter, LessonFilter
 
@@ -71,3 +71,17 @@ class DetailLessonViewSet(RetrieveModelMixin, GenericViewSet):
                     lesson.tags.add(t)
                 lesson.save()
                 return Response(self.serializer_class(lesson).data, status=status.HTTP_201_CREATED)
+    
+    @action(methods=['post'], detail=True, url_path='add-comment')
+    def add_comment(self, request, pk):
+        content = request.data.get('content')
+        if content:
+            comment = models.Comment.objects.create(
+                content=content,
+                lesson=self.get_object(),
+                creator=self.request.user
+            )
+            return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+
