@@ -54,3 +54,13 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Comment
         fields = ['id', 'content', 'created_date', 'updated_date', 'creator']
+
+class ActionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Action
+        fields = ['id', 'type', 'updated_date']
+
+class RatingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Rating
+        fields = ['id', 'rating', 'updated_date']

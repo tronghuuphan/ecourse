@@ -1,4 +1,5 @@
 from django.http import Http404
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.decorators import action, permission_classes
@@ -8,7 +9,7 @@ from rest_framework.permissions import IsAdminUser
 from django_filters.rest_framework import DjangoFilterBackend
 
 from . import models
-from .serializers import CategorySerializer, CommentSerializer, CourseSerializer, LessonSerializer, DetailLessonSerializer, TagSerializer
+from .serializers import ActionSerializer, CategorySerializer, CommentSerializer, CourseSerializer, LessonSerializer, DetailLessonSerializer, TagSerializer
 from .paginations import CoursePagination
 from .filters import CourseFilter, LessonFilter
 
@@ -83,5 +84,24 @@ class DetailLessonViewSet(RetrieveModelMixin, GenericViewSet):
             )
             return Response(CommentSerializer(comment).data, status=status.HTTP_201_CREATED)
         return Response(status=status.HTTP_400_BAD_REQUEST)
-    
 
+    @action(methods=['post'], detail=True, url_path='reaction')
+    def take_action(self, request, pk):
+        try:
+            action_type = int(request.data['type'])
+        except:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+        else:
+            try:
+                action = models.Action.objects.get(creator=self.request.user, lesson=self.get_object())
+            except ObjectDoesNotExist:
+                action = models.Action.objects.create(
+                    type=action_type,
+                    creator=self.request.user,
+                    lesson=self.get_object()
+                )
+                return Response(ActionSerializer(action).data, status=status.HTTP_200_OK)
+            else:
+                action.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+    

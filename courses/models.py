@@ -68,3 +68,32 @@ class Comment(models.Model):
     def __str__(self):
         return self.content
 
+class ActionBase(models.Model):
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now_add=True)
+    creator = models.ForeignKey(
+        to=settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    lesson = models.ForeignKey(
+        to=Lesson,
+        on_delete=models.CASCADE
+    )
+
+    class Meta:
+        abstract=True
+        unique_together=('creator', 'lesson')
+
+class Action(ActionBase):
+    LIKE, HAHA, HEART = range(3)
+    ACTIONS = [
+        (LIKE, 'like'),
+        (HAHA, 'haha'),
+        (HEART, 'heart')
+    ]
+    type = models.PositiveSmallIntegerField(choices=ACTIONS, default=LIKE)
+
+class Rating(ActionBase):
+    rating = models.PositiveSmallIntegerField(default=0)
+
+
